@@ -241,13 +241,13 @@ class Board(object):
         return '\n'.join(rows)
         
 class Pill(object):
-    def __init__(self, board):
+    def __init__(self, board, color1=EMPTY, color2=EMPTY):
         x = board.width / 2
         self.board = board
         self.pos1 = (x-1, 0)
         self.pos2 = (x, 0)
-        self.color1 = random.choice(COLORS)
-        self.color2 = random.choice(COLORS)
+        self.color1 = color1 or random.choice(COLORS)
+        self.color2 = color2 or random.choice(COLORS)
     def copy(self):
         pill = Pill(self.board)
         pill.pos1 = self.pos1
@@ -358,6 +358,45 @@ class Pill(object):
         board.set(x, y, cell2)
     def __str__(self):
         return '%s %s' % (self.pos1, self.pos2)
+        
+class Jar(object):
+    def __init__(self, size=1, seed=None):
+        self.size = size
+        self.count = 0
+        self.rand = random.Random(seed)
+        self.queue = []
+        self.populate()
+    def populate(self):
+        while len(self.queue) < self.size:
+            self.queue.append(self.next())
+    def next(self):
+        c1 = self.rand.choice(COLORS)
+        c2 = self.rand.choice(COLORS)
+        return c1, c2
+    def peek(self):
+        return list(self.queue)
+    def pop(self):
+        result = self.queue.pop(0)
+        self.count += 1
+        self.populate()
+        return result
+    def __str__(self):
+        return str(self.peek())
+        
+class Player(object):
+    def __init__(self, board=None, jar=None):
+        self.board = board or Board()
+        self.jar = jar or Jar()
+        self.pill = Pill(self.board, *self.jar.pop())
+        self.score = 0
+        self.combos = {}
+    def display(self):
+        board = self.board.copy()
+        if self.pill:
+            pill = self.pill.copy()
+            pill.board = board
+            pill.place()
+        return board
         
 if __name__ == '__main__':
     count = 0
