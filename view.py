@@ -5,9 +5,9 @@ import random
 
 SIZE = 55
 
-SHIFT_SPEED = 50
+SHIFT_SPEED = 100
 TICK_SPEED = 500
-AI_SPEED = 50
+AI_SPEED = 100
 
 class BoardView(wx.Panel):
     def __init__(self, parent):
@@ -153,9 +153,12 @@ if __name__ == '__main__':
     import random
     #random.seed(0)
     
-    import psyco
-    psyco.full()
-    
+    try:
+        import psyco
+        psyco.full()
+    except Exception:
+        pass
+        
     app = wx.PySimpleApp()
     frame = Frame()
     frame.Show()
