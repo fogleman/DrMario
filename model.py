@@ -106,7 +106,7 @@ class Board(object):
     @property
     def win(self):
         return not any(cell.germ for cell in self.cells.values())
-    def populate(self, density=0.1, ceiling=6):
+    def populate(self, density=0.75, ceiling=6):
         self.clear()
         if density > 1.0:
             density = 1.0
@@ -419,7 +419,7 @@ class Player(object):
                 self.pill.place()
                 self.pill = None
                 self.state = SHIFTING
-                self._combos = self.board.kill()
+                self._combos = 0
         elif self.state == SHIFTING:
             if not self.board.shift():
                 combos = self.board.kill()

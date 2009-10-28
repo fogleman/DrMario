@@ -3,10 +3,10 @@ import time
 import model
 import view
 
-TICK = 100
-MOVE = 7
+TICK = 50
+MOVE = 16
 SHIFT = 1
-ENGINE = 2
+ENGINE = 1
 
 class Controller(object):
     def __init__(self, players):
@@ -17,6 +17,7 @@ class Controller(object):
         for player in players:
             frame.add_player(player)
         frame.Bind(wx.EVT_CHAR, self.on_char)
+        frame.Centre()
         frame.Show()
         self.frame = frame
         self.sleep()

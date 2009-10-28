@@ -11,6 +11,11 @@ class Engine(object):
         best = -10e9
         result = None
         keys = set()
+        
+        import random
+        random.shuffle(move_list)
+        random.shuffle(rotation_list)
+        
         for moves, rotations in itertools.product(move_list, rotation_list):
             board = the_board.copy()
             pill = the_pill.copy()
@@ -33,44 +38,57 @@ class Engine(object):
     def evaluate(self, board):
         score = 0
         combos = board.reduce()
+        score += 10 ** combos
         w, h = board.width, board.height
-        
-        cells = board.cells.values()
-        germs = [cell for cell in cells if cell.germ]
-        tiles = [cell for cell in cells if not cell.germ]
-        
-        score -= len(tiles) * 8
-        score -= len(germs) * 32
-        
-        if combos > 1:
-            score += 100
-            
+        # germ count
+        germs = [cell for cell in board.cells.values() if cell.germ]
+        score -= 10 * len(germs)
+        # color changes
         for x in range(w):
             has_germ = any(board.get(x, y).germ for y in range(h))
             mult = 3 if has_germ else 1
             previous = None
             for y in range(h):
                 t = h - y
-                cell = board.get(x, y)
-                if cell.color == model.EMPTY:
+                color = board.get(x, y).color
+                if color == model.EMPTY:
                     continue
-                if previous and cell.color != previous:
+                if previous and color != previous:
                     score -= t * mult
-                previous = cell.color
+                previous = color
+        # progressing
+        for x in range(w):
+            has_germ = any(board.get(x, y).germ for y in range(h))
+            mult = 3 if has_germ else 1
             previous = None
             count = 0
             for y in range(h):
-                cell = board.get(x, y)
-                if cell.color == model.EMPTY:
+                color = board.get(x, y).color
+                if color == model.EMPTY:
                     continue
-                if previous and cell.color != previous:
+                if previous and color != previous:
                     break
                 count += 1
-                previous = cell.color
+                previous = color
             score += count * mult
         return score
-        
-        
+        # what's above germs
+        for xy, cell in board.cells.items():
+            x, y = xy
+            for i in range(y-1, -1, -1):
+                c = board.get(x, i)
+                if c.color == model.EMPTY:
+                    continue
+                if c.color == cell.color:
+                    if cell.germ:
+                        score += 6
+                    else:
+                        score += 1
+                else:
+                    if cell.germ:
+                        score -= 1
+                    break
+        return score
         
 if __name__ == '__main__':
     import random
