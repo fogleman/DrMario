@@ -11,6 +11,7 @@ class BoardPanel(wx.Panel):
         w = board.width * SIZE
         h = board.height * SIZE
         self.SetSize((w, h))
+        self.Disable()
         self.SetBackgroundStyle(wx.BG_STYLE_CUSTOM)
         self.Bind(wx.EVT_PAINT, self.on_paint)
     def on_paint(self, event):

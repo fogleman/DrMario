@@ -6,6 +6,7 @@ WIDTH = 8
 HEIGHT = 16
 
 LENGTH = 4
+MAX_RAIN = 4
 
 CW = 1
 CCW = 2
@@ -74,10 +75,11 @@ class Board(object):
                     cell = Cell(color, germ)
                 board.set(x, y, cell)
         return board
-    def __init__(self, width=WIDTH, height=HEIGHT):
+    def __init__(self, width=WIDTH, height=HEIGHT, seed=None):
         self.width = width
         self.height = height
         self.cells = {}
+        self.rand = random.Random(seed)
     def copy(self):
         board = copy.deepcopy(self)
         for xy, cell in board.cells.items():
@@ -106,8 +108,8 @@ class Board(object):
     @property
     def win(self):
         return not any(cell.germ for cell in self.cells.values())
-    def populate(self, density=0.75, ceiling=6, seed=None):
-        rand = random.Random(seed)
+    def populate(self, density=0.75, ceiling=6):
+        rand = self.rand
         self.clear()
         if density > 1.0:
             density = 1.0
@@ -161,22 +163,40 @@ class Board(object):
             else:
                 x, y = self.lookup(cell)
                 self.set(x, y, EMPTY_CELL)
+    def rain(self, colors):
+        rand = self.rand
+        colors = colors[:MAX_RAIN]
+        while True:
+            xs = range(self.width)
+            xs = [x for x in xs if self.get(x, 0) == EMPTY_CELL]
+            rand.shuffle(xs)
+            xs = xs[:len(colors)]
+            for a, b in itertools.product(xs, xs):
+                if abs(a - b) == 1:
+                    break
+            else:
+                break
+        for x, color in zip(xs, colors):
+            cell = Cell(color, False)
+            self.set(x, 0, cell)
     def reduce(self):
-        combos = 0
-        count = self.kill()
-        while count:
-            combos += count
+        combos = []
+        cells = set()
+        _combos, _cells = self.kill()
+        while _combos:
+            combos.extend(_combos)
+            cells |= _cells
             while self.shift():
                 pass
-            count = self.kill()
-        return combos
+            _combos, _cells = self.kill()
+        return combos, cells
     def kill(self):
         combos, cells = self.find()
         for cell in cells:
             cell.disconnect()
             x, y = self.lookup(cell)
             self.set(x, y, EMPTY_CELL)
-        return combos
+        return combos, cells
     def shift(self):
         result = False
         for y in range(self.height-2, -1, -1):
@@ -197,7 +217,7 @@ class Board(object):
                 result = True
         return result
     def find(self, length=LENGTH):
-        combos = 0
+        combos = []
         horizontal = set()
         vertical = set()
         for y in range(self.height):
@@ -206,13 +226,13 @@ class Board(object):
                 if cell not in horizontal:
                     n = self.count(x, y, HORIZONTAL)
                     if n >= length:
-                        combos += 1
+                        combos.append(cell.color)
                         for i in range(n):
                             horizontal.add(self.get(x+i, y))
                 if cell not in vertical:
                     n = self.count(x, y, VERTICAL)
                     if n >= length:
-                        combos += 1
+                        combos.append(cell.color)
                         for i in range(n):
                             vertical.add(self.get(x, y+i))
         cells = horizontal | vertical
@@ -397,12 +417,14 @@ class Player(object):
         self.board = board or Board()
         self.jar = jar or Jar()
         self.engine = engine
+        self.rain = []
         self.pop_pill()
     def pop_pill(self):
         self.pill = self.jar.pop_pill(self.board)
         if self.engine:
             self._engine_data = self.engine.get_moves(self.board, self.pill)
     def update(self):
+        result = []
         if self.state == MOVING:
             place = False
             if self.engine:
@@ -420,23 +442,30 @@ class Player(object):
                 self.pill.place()
                 self.pill = None
                 self.state = SHIFTING
-                self._combos = 0
+                self._combos = []
         elif self.state == SHIFTING:
             if not self.board.shift():
-                combos = self.board.kill()
+                combos, cells = self.board.kill()
                 if combos:
-                    self._combos += combos
+                    self._combos.extend(combos)
                 else:
-                    combos = self._combos
-                    if combos > 1:
-                        print '%dx combo!' % combos
+                    result = self._combos
+                    count = len(self._combos)
+                    if count > 1:
+                        print '%dx combo!' % count
+                    self._combos = []
                     if self.board.win:
                         self.state = WIN
                     elif self.board.over:
                         self.state = OVER
                     else:
-                        self.pop_pill()
-                        self.state = MOVING
+                        if self.rain:
+                            self.board.rain(self.rain)
+                            self.rain = []
+                        else:
+                            self.pop_pill()
+                            self.state = MOVING
+        return result
     def display(self):
         board = self.board.copy()
         if self.pill:

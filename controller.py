@@ -3,8 +3,8 @@ import time
 import model
 import view
 
-TICK = 50
-MOVE = 16
+TICK = 200
+MOVE = 4
 SHIFT = 1
 ENGINE = 1
 
@@ -21,6 +21,13 @@ class Controller(object):
         frame.Show()
         self.frame = frame
         self.sleep()
+    def update(self, player):
+        combos = player.update()
+        if len(combos) > 1:
+            for other in self.players:
+                if other == player:
+                    continue
+                other.rain.extend(combos)
     def refresh(self, player):
         panel = self.frame.get_panel(player)
         panel.Refresh()
@@ -48,7 +55,7 @@ class Controller(object):
             else:
                 update = player.state in states
             if update:
-                player.update()
+                self.update(player)
                 self.refresh(player)
         end = time.time()
         self._delay = int((end - start) * 1000)
@@ -71,7 +78,7 @@ class Controller(object):
                 continue
             success = player.pill.move(direction)
             if direction == model.DOWN and not success:
-                player.update()
+                self.update(player)
             self.refresh(player)
     def on_rotate(self, direction):
         for player in self.players:
@@ -84,6 +91,6 @@ class Controller(object):
             if player.engine or player.state != model.MOVING:
                 continue
             player.pill.drop()
-            player.update()
+            self.update(player)
             self.refresh(player)
             

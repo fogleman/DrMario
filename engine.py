@@ -39,8 +39,8 @@ class Engine(object):
         return result
     def evaluate(self, board):
         score = 0
-        combos = board.reduce()
-        score += 10 ** combos
+        combos, cells = board.reduce()
+        score += 10 ** len(combos)
         w, h = board.width, board.height
         # germ count
         germs = [cell for cell in board.cells.values() if cell.germ]
