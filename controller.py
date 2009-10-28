@@ -4,9 +4,9 @@ import model
 import view
 
 TICK = 100
-MOVE = 4
-SHIFT = 1
-ENGINE = 1
+MOVE = 7
+SHIFT = 2
+ENGINE = 2
 
 class Controller(object):
     def __init__(self, players):

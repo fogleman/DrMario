@@ -111,7 +111,7 @@ class Board(object):
     @property
     def win(self):
         return not any(cell.germ for cell in self.cells.values())
-    def populate(self, density=0.75, ceiling=6):
+    def populate(self, density=0.5, ceiling=6):
         rand = self.rand
         self.clear()
         if density > 1.0:
