@@ -31,19 +31,15 @@ OVER = 3
 WIN = 4
 
 class Cell(object):
-    def __init__(self, color=EMPTY, germ=False):
+    def __init__(self, color=EMPTY, germ=False, connection=None):
         self.color = color
         self.germ = germ
-        self.connection = None
-    def connect(self, other):
-        self.connection = other
-        other.connection = self
-    def disconnect(self):
-        other = self.connection
-        if other:
-            self.connection = None
-            other.connection = None
-            
+        self.connection = connection
+    def copy(self):
+        if self == EMPTY_CELL:
+            return self
+        return Cell(self.color, self.germ, self.connection)
+        
 EMPTY_CELL = Cell()
 
 class Board(object):
@@ -81,10 +77,11 @@ class Board(object):
         self.cells = {}
         self.rand = random.Random(seed)
     def copy(self):
-        board = copy.deepcopy(self)
-        for xy, cell in board.cells.items():
-            if cell.color == EMPTY:
-                board.cells[xy] = EMPTY_CELL
+        board = Board(self.width, self.height)
+        board.rand.setstate(self.rand.getstate())
+        for xy, cell in self.cells.iteritems():
+            x, y = xy
+            board.set(x, y, cell.copy())
         return board
     def clear(self):
         self.cells = {}
@@ -95,10 +92,16 @@ class Board(object):
             return
         self.cells[(x, y)] = cell
     def lookup(self, cell):
-        for k, v in self.cells.items():
+        for k, v in self.cells.iteritems():
             if v == cell:
                 return k
         return None
+    def neighbor(self, cell):
+        if not cell.connection:
+            return None
+        x, y = self.lookup(cell)
+        dx, dy = cell.connection
+        return self.get(x+dx, y+dy)
     @property
     def over(self):
         x = self.width / 2 - 1
@@ -125,8 +128,8 @@ class Board(object):
         while count:
             sx = min(bx.values())
             sy = min(by.values())
-            xs = [x for x, n in bx.items() if n == sx]
-            ys = [y for y, n in by.items() if n == sy]
+            xs = [x for x, n in bx.iteritems() if n == sx]
+            ys = [y for y, n in by.iteritems() if n == sy]
             for x, y in itertools.product(xs, ys):
                 if self.get(x, y) == EMPTY_CELL:
                     break
@@ -197,13 +200,17 @@ class Board(object):
     def kill(self):
         combos, cells = self.find()
         for cell in cells:
-            cell.disconnect()
+            neighbor = self.neighbor(cell)
+            if neighbor:
+                neighbor.connection = None
+            cell.connection = None
             x, y = self.lookup(cell)
             self.set(x, y, EMPTY_CELL)
         return combos, cells
     def shift(self):
         result = False
         for y in range(self.height-2, -1, -1):
+            cells = []
             for x in range(self.width):
                 cell = self.get(x, y)
                 if cell == EMPTY_CELL:
@@ -212,13 +219,15 @@ class Board(object):
                     continue
                 if self.get(x, y+1) != EMPTY_CELL:
                     continue
-                if self.get(x-1, y) == cell.connection and self.get(x-1, y+1) != EMPTY_CELL:
+                if cell.connection == LEFT and self.get(x-1, y+1) != EMPTY_CELL:
                     continue
-                if self.get(x+1, y) == cell.connection and self.get(x+1, y+1) != EMPTY_CELL:
+                if cell.connection == RIGHT and self.get(x+1, y+1) != EMPTY_CELL:
                     continue
+                cells.append((x, y, cell))
+                result = True
+            for x, y, cell in cells:
                 self.set(x, y, EMPTY_CELL)
                 self.set(x, y+1, cell)
-                result = True
         return result
     def find(self, length=LENGTH):
         combos = []
@@ -379,9 +388,11 @@ class Pill(object):
             self.pos2 = (x+dx, y+dy)
     def place(self):
         board = self.board
-        cell1 = Cell(self.color1)
-        cell2 = Cell(self.color2)
-        cell1.connect(cell2)
+        orientation = self.orientation
+        connection = DOWN if orientation == VERTICAL else RIGHT
+        cell1 = Cell(self.color1, False, connection)
+        connection = UP if orientation == VERTICAL else LEFT
+        cell2 = Cell(self.color2, False, connection)
         x, y = self.pos1
         board.set(x, y, cell1)
         x, y = self.pos2
