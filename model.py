@@ -24,6 +24,11 @@ COLORS = [RED, BLUE, YELLOW]
 HORIZONTAL = (1, 0)
 VERTICAL = (0, 1)
 
+MOVING = 1
+SHIFTING = 2
+OVER = 3
+WIN = 4
+
 class Cell(object):
     def __init__(self, color=EMPTY, germ=False):
         self.color = color
@@ -101,7 +106,7 @@ class Board(object):
     @property
     def win(self):
         return not any(cell.germ for cell in self.cells.values())
-    def populate(self, density=1.0, ceiling=5):
+    def populate(self, density=0.1, ceiling=6):
         self.clear()
         if density > 1.0:
             density = 1.0
@@ -380,16 +385,57 @@ class Jar(object):
         self.count += 1
         self.populate()
         return result
+    def pop_pill(self, board):
+        return Pill(board, *self.pop())
     def __str__(self):
         return str(self.peek())
         
 class Player(object):
-    def __init__(self, board=None, jar=None):
+    def __init__(self, board=None, jar=None, engine=None):
+        self.state = MOVING
         self.board = board or Board()
         self.jar = jar or Jar()
-        self.pill = Pill(self.board, *self.jar.pop())
-        self.score = 0
-        self.combos = {}
+        self.engine = engine
+        self.pop_pill()
+    def pop_pill(self):
+        self.pill = self.jar.pop_pill(self.board)
+        if self.engine:
+            self._engine_data = self.engine.get_moves(self.board, self.pill)
+    def update(self):
+        if self.state == MOVING:
+            place = False
+            if self.engine:
+                rotations, moves = self._engine_data
+                if rotations:
+                    self.pill.rotate(rotations.pop(0))
+                elif moves:
+                    self.pill.move(moves.pop(0))
+                else:
+                    self.pill.drop()
+                    place = True
+            elif not self.pill.move():
+                place = True
+            if place:
+                self.pill.place()
+                self.pill = None
+                self.state = SHIFTING
+                self._combos = self.board.kill()
+        elif self.state == SHIFTING:
+            if not self.board.shift():
+                combos = self.board.kill()
+                if combos:
+                    self._combos += combos
+                else:
+                    combos = self._combos
+                    if combos > 1:
+                        print '%dx combo!' % combos
+                    if self.board.win:
+                        self.state = WIN
+                    elif self.board.over:
+                        self.state = OVER
+                    else:
+                        self.pop_pill()
+                        self.state = MOVING
     def display(self):
         board = self.board.copy()
         if self.pill:
@@ -397,6 +443,8 @@ class Player(object):
             pill.board = board
             pill.place()
         return board
+        
+        
         
 if __name__ == '__main__':
     count = 0

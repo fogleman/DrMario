@@ -39,8 +39,8 @@ class Engine(object):
         germs = [cell for cell in cells if cell.germ]
         tiles = [cell for cell in cells if not cell.germ]
         
-        score -= len(tiles) * 20
-        score -= len(germs) * 60
+        score -= len(tiles) * 8
+        score -= len(germs) * 32
         
         if combos > 1:
             score += 100
