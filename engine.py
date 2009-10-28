@@ -1,7 +1,10 @@
+import random
 import model
 import itertools
 
 class Engine(object):
+    def __init__(self, seed=None):
+        self.rand = random.Random(seed)
     def get_moves(self, the_board, the_pill):
         rotation_list = [[model.CW] * n for n in range(4)]
         move_list = [[]]
@@ -12,9 +15,8 @@ class Engine(object):
         result = None
         keys = set()
         
-        import random
-        random.shuffle(move_list)
-        random.shuffle(rotation_list)
+        self.rand.shuffle(move_list)
+        self.rand.shuffle(rotation_list)
         
         for moves, rotations in itertools.product(move_list, rotation_list):
             board = the_board.copy()

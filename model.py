@@ -106,7 +106,8 @@ class Board(object):
     @property
     def win(self):
         return not any(cell.germ for cell in self.cells.values())
-    def populate(self, density=0.75, ceiling=6):
+    def populate(self, density=0.75, ceiling=6, seed=None):
+        rand = random.Random(seed)
         self.clear()
         if density > 1.0:
             density = 1.0
@@ -130,8 +131,8 @@ class Board(object):
             else:
                 xs = bx.keys()
                 ys = by.keys()
-            random.shuffle(xs)
-            random.shuffle(ys)
+            rand.shuffle(xs)
+            rand.shuffle(ys)
             x, y = xs[0], ys[0]
             if self.get(x, y) != EMPTY_CELL:
                 continue
@@ -145,11 +146,11 @@ class Board(object):
         n = count / 3
         colors = [BLUE] * n + [RED] * n + [YELLOW] * n
         while len(colors) < count:
-            colors.append(random.choice(COLORS))
-        random.shuffle(colors)
+            colors.append(rand.choice(COLORS))
+        rand.shuffle(colors)
         for cell, color in zip(self.cells.values(), colors):
             colors = list(COLORS)
-            random.shuffle(colors)
+            rand.shuffle(colors)
             colors.remove(color)
             colors.insert(0, color)
             for color in colors:

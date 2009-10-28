@@ -1,7 +1,5 @@
 import wx
 import model
-import engine
-import random
 
 SIZE = 30
 
@@ -38,19 +36,24 @@ class BoardPanel(wx.Panel):
                 if cell.germ:
                     dc.DrawCircle(a+SIZE/2, b+SIZE/2, SIZE/2.5)
                 elif cell.connection:
-                    dc.DrawRectangle(a, b, SIZE, SIZE)
+                    dc.DrawRectangle(a, b, SIZE-1, SIZE-1)
                 else:
-                    dc.DrawRoundedRectangle(a, b, SIZE, SIZE, 10)
+                    dc.DrawRoundedRectangle(a, b, SIZE-1, SIZE-1, 10)
                     
 class MainFrame(wx.Frame):
     def __init__(self):
         super(MainFrame, self).__init__(None, -1, 'Dr. Mario')
+        panel = wx.Panel(self, -1)
         self.players = []
         self.panels = []
         self.sizer = wx.BoxSizer(wx.HORIZONTAL)
-        self.SetSizer(self.sizer)
+        self.panel = panel
+        panel.SetSizer(self.sizer)
+        sizer = wx.BoxSizer(wx.VERTICAL)
+        sizer.Add(panel, 1, wx.EXPAND)
+        self.SetSizer(sizer)
     def add_player(self, player):
-        panel = BoardPanel(self, player)
+        panel = BoardPanel(self.panel, player)
         self.sizer.Add(panel, 0, wx.ALL, 10)
         self.Fit()
         self.players.append(player)
