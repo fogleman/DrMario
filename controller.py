@@ -3,7 +3,7 @@ import time
 import model
 import view
 
-TICK = 200
+TICK = 100
 MOVE = 4
 SHIFT = 1
 ENGINE = 1

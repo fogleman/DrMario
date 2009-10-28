@@ -1,7 +1,7 @@
 import wx
 import model
 
-SIZE = 30
+SIZE = 50
 
 class BoardPanel(wx.Panel):
     def __init__(self, parent, player):

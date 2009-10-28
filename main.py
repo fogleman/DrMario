@@ -4,15 +4,18 @@ import engine
 import model
 import controller
 
+BOARD_SEED = None
+JAR_SEED = None
+
 def multiplayer():
-    board = model.Board(seed=2)
+    board = model.Board(seed=BOARD_SEED)
     board.populate()
-    seed = 1#random.getrandbits(32)
+    seed = JAR_SEED or random.getrandbits(32)
     players = []
     for i in range(2):
         b = board.copy()
         j = model.Jar(1, seed)
-        e = engine.Engine(seed=i) if i > 0 else None
+        e = engine.Engine(seed=i) #if i > 0 else None
         player = model.Player(b, j, e)
         players.append(player)
     return players

@@ -438,8 +438,10 @@ class Player(object):
                 elif moves:
                     self.pill.move(moves.pop(0))
                 else:
-                    self.pill.drop()
-                    place = True
+                    #self.pill.drop()
+                    #place = True
+                    if not self.pill.move():
+                        place = True
             elif not self.pill.move():
                 place = True
             if place:
