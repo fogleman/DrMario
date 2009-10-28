@@ -7,6 +7,7 @@ TICK = 100
 MOVE = 7
 SHIFT = 2
 ENGINE = 2
+TOGGLE = 4
 
 class Controller(object):
     def __init__(self, players):
@@ -31,6 +32,10 @@ class Controller(object):
     def refresh(self, player):
         panel = self.frame.get_panel(player)
         panel.Refresh()
+    def toggle(self):
+        for panel in self.frame.panels:
+            panel.toggle()
+            panel.Refresh()
     def sleep(self):
         duration = TICK - self._delay
         duration = max(duration, 1)
@@ -57,6 +62,8 @@ class Controller(object):
             if update:
                 self.update(player)
                 self.refresh(player)
+        if self._counter % TOGGLE == 0:
+            self.toggle()
         end = time.time()
         self._delay = int((end - start) * 1000)
         self.sleep()

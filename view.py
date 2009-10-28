@@ -1,11 +1,28 @@
 import wx
 import model
 
-SIZE = 50
+SIZE = 32
 
 class BoardPanel(wx.Panel):
     def __init__(self, parent, player):
         super(BoardPanel, self).__init__(parent, -1, style=wx.BORDER_SUNKEN)
+        self.bit = False
+        self.plain = {
+            model.RED: wx.Bitmap('images/red.png'),
+            model.BLUE: wx.Bitmap('images/blue.png'),
+            model.YELLOW: wx.Bitmap('images/yellow.png'),
+        }
+        self.germ1 = {
+            model.RED: wx.Bitmap('images/red-germ.png'),
+            model.BLUE: wx.Bitmap('images/blue-germ.png'),
+            model.YELLOW: wx.Bitmap('images/yellow-germ.png'),
+        }
+        self.germ2 = {
+            model.RED: wx.Bitmap('images/red-germ2.png'),
+            model.BLUE: wx.Bitmap('images/blue-germ2.png'),
+            model.YELLOW: wx.Bitmap('images/yellow-germ2.png'),
+        }
+        
         self.player = player
         board = player.board
         w = board.width * SIZE
@@ -14,33 +31,29 @@ class BoardPanel(wx.Panel):
         self.Disable()
         self.SetBackgroundStyle(wx.BG_STYLE_CUSTOM)
         self.Bind(wx.EVT_PAINT, self.on_paint)
+    def toggle(self):
+        self.bit = not self.bit
     def on_paint(self, event):
         dc = wx.AutoBufferedPaintDC(self)
         w, h = self.GetClientSize()
         dc.SetBrush(wx.BLACK_BRUSH)
         dc.DrawRectangle(0, 0, w, h)
-        colors = {
-            model.RED: wx.Colour(255, 0, 0),
-            model.YELLOW: wx.Colour(255, 255, 0),
-            model.BLUE: wx.Colour(0, 0, 255),
-        }
         board = self.player.display()
         for y in range(board.height):
             for x in range(board.width):
                 cell = board.get(x, y)
                 if cell == model.EMPTY_CELL:
                     continue
-                color = colors[cell.color]
-                dc.SetBrush(wx.Brush(color))
-                dc.SetPen(wx.WHITE_PEN)
-                a, b = x*SIZE, y*SIZE
                 if cell.germ:
-                    dc.DrawCircle(a+SIZE/2, b+SIZE/2, SIZE/2.5)
-                elif cell.connection:
-                    dc.DrawRectangle(a, b, SIZE-1, SIZE-1)
+                    if self.bit:
+                        bitmap = self.germ1[cell.color]
+                    else:
+                        bitmap = self.germ2[cell.color]
                 else:
-                    dc.DrawRoundedRectangle(a, b, SIZE-1, SIZE-1, 10)
-                    
+                    bitmap = self.plain[cell.color]
+                a, b = x*SIZE, y*SIZE
+                dc.DrawBitmap(bitmap, a, b)
+                
 class MainFrame(wx.Frame):
     def __init__(self):
         super(MainFrame, self).__init__(None, -1, 'Dr. Mario')
