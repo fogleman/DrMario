@@ -165,18 +165,22 @@ class Board(object):
                 self.set(x, y, EMPTY_CELL)
     def rain(self, colors):
         rand = self.rand
+        cols = [x for x in range(self.width) if self.get(x, 0) == EMPTY_CELL]
+        colors = colors[:len(cols)]
         colors = colors[:MAX_RAIN]
-        while True:
-            xs = range(self.width)
-            xs = [x for x in xs if self.get(x, 0) == EMPTY_CELL]
-            rand.shuffle(xs)
-            xs = xs[:len(colors)]
-            for a, b in itertools.product(xs, xs):
+        combos = list(itertools.combinations(cols, len(colors)))
+        rand.shuffle(combos)
+        for combo in combos:
+            for a, b in itertools.combinations(combo, 2):
                 if abs(a - b) == 1:
                     break
             else:
                 break
-        for x, color in zip(xs, colors):
+        else:
+            combo = rand.choice(combos)
+        combo = list(combo)
+        rand.shuffle(combo)
+        for x, color in zip(combo, colors):
             cell = Cell(color, False)
             self.set(x, 0, cell)
     def reduce(self):
