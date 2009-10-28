@@ -12,6 +12,20 @@ class BoardPanel(wx.Panel):
             model.BLUE: wx.Bitmap('images/blue.png'),
             model.YELLOW: wx.Bitmap('images/yellow.png'),
         }
+        self.connected = {
+            (model.RED, model.LEFT): wx.Bitmap('images/red-left.png'),
+            (model.RED, model.RIGHT): wx.Bitmap('images/red-right.png'),
+            (model.RED, model.UP): wx.Bitmap('images/red-top.png'),
+            (model.RED, model.DOWN): wx.Bitmap('images/red-bottom.png'),
+            (model.BLUE, model.LEFT): wx.Bitmap('images/blue-left.png'),
+            (model.BLUE, model.RIGHT): wx.Bitmap('images/blue-right.png'),
+            (model.BLUE, model.UP): wx.Bitmap('images/blue-top.png'),
+            (model.BLUE, model.DOWN): wx.Bitmap('images/blue-bottom.png'),
+            (model.YELLOW, model.LEFT): wx.Bitmap('images/yellow-left.png'),
+            (model.YELLOW, model.RIGHT): wx.Bitmap('images/yellow-right.png'),
+            (model.YELLOW, model.UP): wx.Bitmap('images/yellow-top.png'),
+            (model.YELLOW, model.DOWN): wx.Bitmap('images/yellow-bottom.png'),
+        }
         self.germ1 = {
             model.RED: wx.Bitmap('images/red-germ.png'),
             model.BLUE: wx.Bitmap('images/blue-germ.png'),
@@ -49,6 +63,8 @@ class BoardPanel(wx.Panel):
                         bitmap = self.germ1[cell.color]
                     else:
                         bitmap = self.germ2[cell.color]
+                elif cell.connection:
+                    bitmap = self.connected[(cell.color, cell.connection)]
                 else:
                     bitmap = self.plain[cell.color]
                 a, b = x*SIZE, y*SIZE
