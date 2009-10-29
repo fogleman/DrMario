@@ -330,16 +330,18 @@ class Pill(object):
     def rotate(self, direction=CW):
         assert self.test()
         undo = CCW if direction == CW else CW
+        d1 = LEFT if direction == CW else RIGHT
+        d2 = RIGHT if direction == CW else LEFT
         self._rotate(direction)
         if self.test():
             return True
-        self._move(LEFT)
+        self._move(d1)
         if self.test():
             return True
-        self._move(RIGHT, 2)
+        self._move(d2, 2)
         if self.test():
             return True
-        self._move(LEFT)
+        self._move(d1)
         self._rotate(undo)
         return False
     def _rotate(self, direction, times=1):

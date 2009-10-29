@@ -1,3 +1,4 @@
+import time
 import random
 import model
 import router
@@ -7,63 +8,25 @@ class Engine(object):
     def __init__(self, seed=None):
         self.rand = random.Random(seed)
     def get_moves(self, the_board, the_pill, the_jar):
+        start = time.time()
         sites = router.find_sites(the_board, the_pill)
         self.rand.shuffle(sites)
         best = -10e9
         result = None
-        count = 0
         for site in sites:
-            path = router.find_path(the_board, site, the_pill)
-            if not path:
-                continue
             board = the_board.copy()
-            pill = the_pill.copy()
+            pill = site.copy()
             pill.board = board
-            for move in path:
-                if isinstance(move, tuple):
-                    pill.move(move)
-                else:
-                    pill.rotate(move)
-            pill.drop()
-            pill.place()
-            score = self.evaluate(board)
-            count += 1
-            if score > best:
-                best = score
-                result = path
-        print count, len(sites)
-        return result
-        
-        rotation_list = [[model.CW] * n for n in range(4)]
-        move_list = [[]]
-        for i in range(1, the_board.width / 2 + 1):
-            move_list.append([model.LEFT] * i)
-            move_list.append([model.RIGHT] * i)
-        best = -10e9
-        result = None
-        keys = set()
-        
-        self.rand.shuffle(move_list)
-        self.rand.shuffle(rotation_list)
-        
-        for moves, rotations in itertools.product(move_list, rotation_list):
-            board = the_board.copy()
-            pill = the_pill.copy()
-            pill.board = board
-            for rotation in rotations:
-                pill.rotate(rotation)
-            for move in moves:
-                pill.move(move)
-            key = pill.key
-            if key in keys:
-                continue
-            keys.add(key)
-            pill.drop()
             pill.place()
             score = self.evaluate(board)
             if score > best:
-                best = score
-                result = (rotations, moves)
+                path = router.find_path(the_board, site, the_pill)
+                if path:
+                    best = score
+                    result = path
+        end = time.time()
+        duration = int((end - start) * 1000)
+        print '%d sites, %d ms.' % (len(sites), duration)
         return result
     def evaluate(self, board):
         score = 0
@@ -101,23 +64,6 @@ class Engine(object):
                 count += 1
                 previous = color
             score += count * mult
-        return score
-        # what's above germs
-        for xy, cell in board.cells.items():
-            x, y = xy
-            for i in range(y-1, -1, -1):
-                c = board.get(x, i)
-                if c.color == model.EMPTY:
-                    continue
-                if c.color == cell.color:
-                    if cell.germ:
-                        score += 6
-                    else:
-                        score += 1
-                else:
-                    if cell.germ:
-                        score -= 1
-                    break
         return score
         
 if __name__ == '__main__':

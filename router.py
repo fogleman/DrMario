@@ -76,7 +76,7 @@ def _get_order(start, end):
         ax2, ay2 = a.pos2
         bx1, by1 = b.pos1
         bx2, by2 = b.pos2
-        dist = abs(ax1-bx1) + abs(ay1-by1)*2 + abs(ax2-bx2) + abs(ay2-by2)*2
+        dist = abs(ax1-bx1) + abs(ay1-by1) + abs(ax2-bx2) + abs(ay2-by2)
         value = (dist, move)
         order.append(value)
     order.sort()

@@ -15,7 +15,7 @@ def multiplayer():
     for i in range(2):
         b = board.copy()
         j = model.Jar(1, seed)
-        e = engine.Engine(seed=i) if i > 0 else None
+        e = engine.Engine(seed=i) #if i > 0 else None
         player = model.Player(b, j, e)
         players.append(player)
     return players
