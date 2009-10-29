@@ -1,0 +1,60 @@
+Case-insensitive, except board (upper=germ, lower=not-germ).
+Zero-indexed coordinates.
+Semi-colon delimited.
+Comma delimited points (x,y) and sizes (w,h).
+New-line terminated messages.
+New-lines inside of messages below are for clarity only. Each message is one line.
+Moves should include downward movement too.
+If pill is still floating after all moves, pill will be dropped.
+
+For each pill, server will send:
+BOARD, CONNECT*, PILL, JAR, DONE
+
+Client will send:
+MOVE+, DONE
+
+Message format:
+
+BOARD;WIDTH,HEIGHT;DATA;
+CONNECT;X,Y;X,Y;
+PILL;COLOR,COLOR;X,Y;X,Y;
+JAR;COLOR,COLOR;+
+MOVE;ROTATION|DIRECTION;+
+DONE;
+
+Examples:
+
+BOARD;8,16;
+........
+........
+........
+........
+........
+........
+........
+........
+.....Y..
+..R.....
+........
+....B...
+......R.
+........
+.B...Y..
+........;
+
+CONNECT;3,4;4,4;
+CONNECT;5,7;5,8;
+
+PILL;R,B;3,0;4,0;
+
+JAR;R,R;Y,R;B,Y;
+
+DONE;
+
+MOVE;CW;CCW;RIGHT;CCW;DOWN;DOWN;DOWN;
+DONE;
+
+MOVE;CW;
+MOVE;CCW;
+MOVE;RIGHT;
+DONE;

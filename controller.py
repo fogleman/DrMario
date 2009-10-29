@@ -3,11 +3,11 @@ import time
 import model
 import view
 
-TICK = 100
-MOVE = 7
-SHIFT = 2
+TICK = 50
+MOVE = 15
+SHIFT = 5
 ENGINE = 2
-TOGGLE = 4
+TOGGLE = 8
 
 class Controller(object):
     def __init__(self, players):
@@ -42,6 +42,8 @@ class Controller(object):
         duration = min(duration, TICK)
         wx.CallLater(duration, self.on_tick)
     def on_tick(self):
+        if not self.frame:
+            return
         start = time.time()
         self._counter += 1
         states = []

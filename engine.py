@@ -1,11 +1,39 @@
 import random
 import model
+import router
 import itertools
 
 class Engine(object):
     def __init__(self, seed=None):
         self.rand = random.Random(seed)
-    def get_moves(self, the_board, the_pill):
+    def get_moves(self, the_board, the_pill, the_jar):
+        sites = router.find_sites(the_board, the_pill)
+        self.rand.shuffle(sites)
+        best = -10e9
+        result = None
+        count = 0
+        for site in sites:
+            path = router.find_path(the_board, site, the_pill)
+            if not path:
+                continue
+            board = the_board.copy()
+            pill = the_pill.copy()
+            pill.board = board
+            for move in path:
+                if isinstance(move, tuple):
+                    pill.move(move)
+                else:
+                    pill.rotate(move)
+            pill.drop()
+            pill.place()
+            score = self.evaluate(board)
+            count += 1
+            if score > best:
+                best = score
+                result = path
+        print count, len(sites)
+        return result
+        
         rotation_list = [[model.CW] * n for n in range(4)]
         move_list = [[]]
         for i in range(1, the_board.width / 2 + 1):

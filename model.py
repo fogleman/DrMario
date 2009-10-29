@@ -90,7 +90,10 @@ class Board(object):
     def set(self, x, y, cell):
         if x < 0 or y < 0 or x >= self.width or y >= self.height:
             return
-        self.cells[(x, y)] = cell
+        if cell == EMPTY_CELL:
+            del self.cells[(x, y)]
+        else:
+            self.cells[(x, y)] = cell
     def lookup(self, cell):
         for k, v in self.cells.iteritems():
             if v == cell:
@@ -111,7 +114,7 @@ class Board(object):
     @property
     def win(self):
         return not any(cell.germ for cell in self.cells.values())
-    def populate(self, density=0.5, ceiling=6):
+    def populate(self, density=0.25, ceiling=6):
         rand = self.rand
         self.clear()
         if density > 1.0:
@@ -298,6 +301,9 @@ class Pill(object):
     def key(self):
         return (self.pos1, self.pos2, self.color1, self.color2)
     @property
+    def rkey(self):
+        return (self.pos1, self.pos2, self.color2, self.color1)
+    @property
     def orientation(self):
         x1, y1 = self.pos1
         x2, y2 = self.pos2
@@ -437,20 +443,20 @@ class Player(object):
     def pop_pill(self):
         self.pill = self.jar.pop_pill(self.board)
         if self.engine:
-            self._engine_data = self.engine.get_moves(self.board, self.pill)
+            self._engine_data = self.engine.get_moves(self.board, self.pill, self.jar.peek())
     def update(self):
         result = []
         if self.state == MOVING:
             place = False
             if self.engine:
-                rotations, moves = self._engine_data
-                if rotations:
-                    self.pill.rotate(rotations.pop(0))
-                elif moves:
-                    self.pill.move(moves.pop(0))
+                moves = self._engine_data
+                if moves:
+                    move = moves.pop(0)
+                    if isinstance(move, tuple):
+                        self.pill.move(move)
+                    else:
+                        self.pill.rotate(move)
                 else:
-                    #self.pill.drop()
-                    #place = True
                     if not self.pill.move():
                         place = True
             elif not self.pill.move():
