@@ -1,21 +1,65 @@
 import model
+import dijkstra
 
+class Graph(object):
+    def __init__(self, board):
+        self.board = board
+        self.cache = {}
+    def convert(self, path):
+        result = []
+        p1, p2, c1, c2 = path[0]
+        pill = model.Pill(self.board, c1, c2)
+        pill.pos1 = p1
+        pill.pos2 = p2
+        for key in path[1:]:
+            for move in (model.DOWN, model.LEFT, model.RIGHT, model.CW, model.CCW):
+                p = pill.copy()
+                if isinstance(move, tuple):
+                    ok = p.move(move)
+                else:
+                    ok = p.rotate(move)
+                if not ok:
+                    continue
+                if p.key == key:
+                    result.append(move)
+                    pill = p
+                    break
+            else:
+                raise Exception
+        return result
+    def __getitem__(self, key):
+        if key in self.cache:
+            return self.cache[key]
+        p1, p2, c1, c2 = key
+        pill = model.Pill(self.board, c1, c2)
+        pill.pos1 = p1
+        pill.pos2 = p2
+        d = {}
+        data = [
+            (model.DOWN, 1),
+            (model.LEFT, 1),
+            (model.RIGHT, 1),
+            (model.CW, 1),
+            (model.CCW, 1),
+        ]
+        for move, weight in data:
+            p = pill.copy()
+            if isinstance(move, tuple):
+                ok = p.move(move)
+            else:
+                ok = p.rotate(move)
+            if not ok:
+                continue
+            k = p.key
+            d[k] = weight
+        self.cache[key] = d
+        return d
+        
 def _add_sites(result, x1, y1, x2, y2, c1, c2):
     p1 = (x1, y1, x2, y2, c1, c2)
     p2 = (x1, y1, x2, y2, c2, c1)
     result.add(p1)
     result.add(p2)
-    
-def _compare(p1, p2):
-    if p1.pos1 != p2.pos1:
-        return False
-    if p1.pos2 != p2.pos2:
-        return False
-    if p1.color1 != p2.color1:
-        return False
-    if p1.color2 != p2.color2:
-        return False
-    return True
     
 def find_sites(board, pill):
     sites = set()
@@ -41,75 +85,11 @@ def find_sites(board, pill):
         pills.append(pill)
     return pills
     
-def find_path(board, start, end):
-    reverse = {
-        model.UP: model.DOWN,
-        model.LEFT: model.RIGHT,
-        model.RIGHT: model.LEFT,
-        model.CW: model.CCW,
-        model.CCW: model.CW,
-    }
-    path = _find_path(board, start, end)
-    if path:
-        path.reverse()
-        path = [reverse[n] for n in path]
+def find_path(graph, start, end):
+    try:
+        path = dijkstra.shortestPath(graph, start.key, end.key)
+        path = graph.convert(path)
         return path
-    return None
-    
-def _get_order(start, end):
-    moves = [model.UP, model.LEFT, model.RIGHT, model.CCW]#, model.CCW]
-    start = start.copy()
-    end = end.copy()
-    order = []
-    for move in moves:
-        a = start.copy()
-        b = end
-        if isinstance(move, tuple):
-            ok = a.move(move)
-        else:
-            ok = a.rotate(move)
-        if not ok:
-            continue
-        if a.color1 != b.color1 or a.color2 != b.color2:
-            a._swap()
-        ax1, ay1 = a.pos1
-        ax2, ay2 = a.pos2
-        bx1, by1 = b.pos1
-        bx2, by2 = b.pos2
-        dist = abs(ax1-bx1) + abs(ay1-by1) + abs(ax2-bx2) + abs(ay2-by2)
-        value = (dist, move)
-        order.append(value)
-    order.sort()
-    order = [n[1] for n in order]
-    return order
-    
-def _find_path(board, start, end, moves=None, memo=None):
-    if _compare(start, end):
-        return list(moves)
-    moves = moves or []
-    memo = memo or set()
-    order = _get_order(start, end)
-    for move in order:
-        pill = start.copy()
-        ok = False
-        if isinstance(move, tuple):
-            if pill.move(move):
-                ok = True
-        else:
-            if pill.rotate(move):
-                ok = True
-        if not ok:
-            continue
-        key = pill.key
-        rkey = pill.rkey
-        if key in memo:# or rkey in memo:
-            continue
-        moves.append(move)
-        memo.add(key)
-        #memo.add(rkey)
-        result = _find_path(board, pill, end, moves, memo)
-        moves.pop()
-        if result:
-            return result
-    return None
-    
+    except Exception:
+        return None
+        

@@ -327,7 +327,7 @@ class Pill(object):
         if board.get(*self.pos2) != EMPTY_CELL:
             return False
         return True
-    def rotate(self, direction=CW):
+    def rotate(self, direction=CW, shift=True):
         assert self.test()
         undo = CCW if direction == CW else CW
         d1 = LEFT if direction == CW else RIGHT
@@ -335,13 +335,14 @@ class Pill(object):
         self._rotate(direction)
         if self.test():
             return True
-        self._move(d1)
-        if self.test():
-            return True
-        self._move(d2, 2)
-        if self.test():
-            return True
-        self._move(d1)
+        if shift:
+            self._move(d1)
+            if self.test():
+                return True
+            self._move(d2, 2)
+            if self.test():
+                return True
+            self._move(d1)
         self._rotate(undo)
         return False
     def _rotate(self, direction, times=1):

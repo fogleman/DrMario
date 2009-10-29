@@ -10,6 +10,7 @@ class Engine(object):
     def get_moves(self, the_board, the_pill, the_jar):
         start = time.time()
         sites = router.find_sites(the_board, the_pill)
+        graph = router.Graph(the_board)
         self.rand.shuffle(sites)
         best = -10e9
         result = None
@@ -20,7 +21,7 @@ class Engine(object):
             pill.place()
             score = self.evaluate(board)
             if score > best:
-                path = router.find_path(the_board, site, the_pill)
+                path = router.find_path(graph, the_pill, site)
                 if path:
                     best = score
                     result = path
@@ -41,14 +42,18 @@ class Engine(object):
             has_germ = any(board.get(x, y).germ for y in range(h))
             mult = 3 if has_germ else 1
             previous = None
+            empty = True
             for y in range(h):
                 t = h - y
                 color = board.get(x, y).color
                 if color == model.EMPTY:
+                    empty = True
                     continue
                 if previous and color != previous:
-                    score -= t * mult
+                    m = mult if empty else mult+1
+                    score -= t * m
                 previous = color
+                empty = False
         # progressing
         for x in range(w):
             has_germ = any(board.get(x, y).germ for y in range(h))
