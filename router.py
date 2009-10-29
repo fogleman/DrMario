@@ -65,7 +65,7 @@ def find_sites(board, pill):
     sites = set()
     c1, c2 = pill.color1, pill.color2
     points = board.cells.keys()
-    points.extend((x, board.height-1) for x in range(board.width))
+    points.extend((x, board.height) for x in range(board.width))
     for x, y in points:
         if y < 1:
             continue

@@ -192,14 +192,15 @@ class Board(object):
     def reduce(self):
         combos = []
         cells = set()
+        shifts = 0
         _combos, _cells = self.kill()
         while _combos:
             combos.extend(_combos)
             cells |= _cells
             while self.shift():
-                pass
+                shifts += 1
             _combos, _cells = self.kill()
-        return combos, cells
+        return combos, cells, shifts
     def kill(self):
         combos, cells = self.find()
         for cell in cells:
