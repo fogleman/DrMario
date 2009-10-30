@@ -4,18 +4,29 @@ import engine
 import model
 import controller
 
+try:
+    import psyco
+    psyco.full()
+except Exception:
+    pass
+    
+PLAYERS = 1
+HUMAN = False
+DENSITY = 0.25
 BOARD_SEED = None
 JAR_SEED = None
 
 def multiplayer():
     board = model.Board(seed=BOARD_SEED)
-    board.populate()
+    board.populate(DENSITY)
     seed = JAR_SEED or random.getrandbits(32)
     players = []
-    for i in range(2):
+    for i in range(PLAYERS):
         b = board.copy()
         j = model.Jar(1, seed)
-        e = engine.Engine(seed=i) #if i > 0 else None
+        e = engine.Engine(seed=i)
+        if i == 0 and HUMAN:
+            e = None
         player = model.Player(b, j, e)
         players.append(player)
     return players
