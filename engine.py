@@ -31,44 +31,65 @@ class Engine(object):
         return result
     def evaluate(self, board):
         score = 0
-        combos, cells, shifts = board.reduce()
-        score += 10 ** len(combos)
         w, h = board.width, board.height
+        combos, cells, shifts = board.reduce()
+        
+        # reduction
+        score += 20 ** len(combos)
+        score -= shifts
+        
         # germ count
-        germs = [cell for cell in board.cells.values() if cell.germ]
-        score -= 10 * len(germs)
+        germs = [cell for cell in board.cells.itervalues() if cell.germ]
+        if not germs:
+            score += 10000
+        score -= len(germs) * 20
+        
+        # game over
+        if board.get(w/2, 0) != model.EMPTY_CELL:
+            score -= 10000
+        if board.get(w/2-1, 0) != model.EMPTY_CELL:
+            score -= 10000
+            
+        # top section
+        for x in range(w):
+            colors = set()
+            for y in range(model.LENGTH):
+                color = board.get(x, y).color
+                if color != model.EMPTY:
+                    colors.add(color)
+            if len(colors) > 1:
+                score -= 1000
+                
         # color changes
         for x in range(w):
-            has_germ = any(board.get(x, y).germ for y in range(h))
-            mult = 3 if has_germ else 1
             previous = None
-            empty = True
+            germ = False
+            for y in range(h-1, -1, -1):
+                t = h - y
+                cell = board.get(x, y)
+                if cell == model.EMPTY_CELL:
+                    continue
+                if previous and cell.color != previous.color:
+                    mult = 6 if germ else 2
+                    score -= t * mult
+                if cell.germ:
+                    germ = True
+                previous = cell
+                
+        # connectedness
+        for x in range(w):
+            previous = None
             for y in range(h):
                 t = h - y
-                color = board.get(x, y).color
-                if color == model.EMPTY:
-                    empty = True
+                cell = board.get(x, y)
+                if cell == model.EMPTY_CELL:
+                    previous = None
                     continue
-                if previous and color != previous:
-                    m = mult if empty else mult+1
-                    score -= t * m
-                previous = color
-                empty = False
-        # progressing
-        for x in range(w):
-            has_germ = any(board.get(x, y).germ for y in range(h))
-            mult = 3 if has_germ else 1
-            previous = None
-            count = 0
-            for y in range(h):
-                color = board.get(x, y).color
-                if color == model.EMPTY:
-                    continue
-                if previous and color != previous:
-                    break
-                count += 1
-                previous = color
-            score += count * mult
+                if previous and cell.color == previous.color:
+                    mult = 4 if cell.germ else 2
+                    score += t * mult
+                previous = cell
+                
         return score
         
 if __name__ == '__main__':

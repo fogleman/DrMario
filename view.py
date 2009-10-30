@@ -36,7 +36,6 @@ class BoardPanel(wx.Panel):
             model.BLUE: wx.Bitmap('images/blue-germ2.png'),
             model.YELLOW: wx.Bitmap('images/yellow-germ2.png'),
         }
-        
         self.player = player
         board = player.board
         w = board.width * SIZE

@@ -36,11 +36,11 @@ class Graph(object):
         pill.pos2 = p2
         d = {}
         data = [
-            (model.DOWN, 1),
-            (model.LEFT, 1),
-            (model.RIGHT, 1),
-            (model.CW, 1),
-            (model.CCW, 1),
+            (model.DOWN, 11),
+            (model.LEFT, 10),
+            (model.RIGHT, 10),
+            (model.CW, 9),
+            (model.CCW, 9),
         ]
         for move, weight in data:
             p = pill.copy()
@@ -55,13 +55,12 @@ class Graph(object):
         self.cache[key] = d
         return d
         
-def _add_sites(result, x1, y1, x2, y2, c1, c2):
-    p1 = (x1, y1, x2, y2, c1, c2)
-    p2 = (x1, y1, x2, y2, c2, c1)
-    result.add(p1)
-    result.add(p2)
-    
 def find_sites(board, pill):
+    def add_sites(result, x1, y1, x2, y2, c1, c2):
+        p1 = (x1, y1, x2, y2, c1, c2)
+        p2 = (x1, y1, x2, y2, c2, c1)
+        result.add(p1)
+        result.add(p2)
     sites = set()
     c1, c2 = pill.color1, pill.color2
     points = board.cells.keys()
@@ -72,11 +71,11 @@ def find_sites(board, pill):
         if board.get(x, y-1) != model.EMPTY_CELL:
             continue
         if x > 0 and board.get(x-1, y-1) == model.EMPTY_CELL:
-            _add_sites(sites, x-1, y-1, x, y-1, c1, c2)
+            add_sites(sites, x-1, y-1, x, y-1, c1, c2)
         if x < board.width-1 and board.get(x+1, y-1) == model.EMPTY_CELL:
-            _add_sites(sites, x, y-1, x+1, y-1, c1, c2)
+            add_sites(sites, x, y-1, x+1, y-1, c1, c2)
         if y > 1 and board.get(x, y-2) == model.EMPTY_CELL:
-            _add_sites(sites, x, y-2, x, y-1, c1, c2)
+            add_sites(sites, x, y-2, x, y-1, c1, c2)
     pills = []
     for x1, y1, x2, y2, c1, c2 in sites:
         pill = model.Pill(board, c1, c2)
