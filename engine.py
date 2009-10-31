@@ -19,7 +19,7 @@ class Engine(object):
             pill = site.copy()
             pill.board = board
             pill.place()
-            score = self.evaluate(board)
+            score = self.evaluate(board, pill)
             if score > best:
                 path = router.find_path(graph, the_pill, site)
                 if path:
@@ -29,7 +29,7 @@ class Engine(object):
         duration = int((end - start) * 1000)
         print '%d sites, %d ms.' % (len(sites), duration)
         return result
-    def evaluate(self, board):
+    def evaluate(self, board, pill):
         score = 0
         w, h = board.width, board.height
         combos, cells, shifts = board.reduce()

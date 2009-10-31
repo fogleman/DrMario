@@ -36,11 +36,12 @@ class Cell(object):
         self.germ = germ
         self.connection = connection
     def copy(self):
-        if self == EMPTY_CELL:
+        if self in (EMPTY_CELL, EXPLODE_CELL):
             return self
         return Cell(self.color, self.germ, self.connection)
         
 EMPTY_CELL = Cell()
+EXPLODE_CELL = Cell()
 
 class Board(object):
     @staticmethod
@@ -99,6 +100,11 @@ class Board(object):
             if v == cell:
                 return k
         return None
+    def replace_all(self, a, b):
+        for xy, cell in self.cells.items():
+            if cell == a:
+                x, y = xy
+                self.set(x, y, b)
     def neighbor(self, cell):
         if not cell.connection:
             return None
@@ -201,7 +207,7 @@ class Board(object):
                 shifts += 1
             _combos, _cells = self.kill()
         return combos, cells, shifts
-    def kill(self):
+    def kill(self, fill=EMPTY_CELL):
         combos, cells = self.find()
         for cell in cells:
             neighbor = self.neighbor(cell)
@@ -209,7 +215,7 @@ class Board(object):
                 neighbor.connection = None
             cell.connection = None
             x, y = self.lookup(cell)
-            self.set(x, y, EMPTY_CELL)
+            self.set(x, y, fill)
         return combos, cells
     def shift(self):
         result = False
@@ -217,7 +223,7 @@ class Board(object):
             cells = []
             for x in range(self.width):
                 cell = self.get(x, y)
-                if cell == EMPTY_CELL:
+                if cell.color == EMPTY:
                     continue
                 if cell.germ:
                     continue
@@ -476,8 +482,9 @@ class Player(object):
                 self.state = SHIFTING
                 self._combos = []
         elif self.state == SHIFTING:
+            self.board.replace_all(EXPLODE_CELL, EMPTY_CELL)
             if not self.board.shift():
-                combos, cells = self.board.kill()
+                combos, cells = self.board.kill(EXPLODE_CELL)
                 if combos:
                     self._combos.extend(combos)
                 else:

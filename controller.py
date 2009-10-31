@@ -52,8 +52,8 @@ class Controller(object):
     def on_tick(self):
         if not self.frame:
             return
-        if not self._sound.playing:
-            self._sound.play()
+        #if not self._sound.playing:
+        #    self._sound.play()
         start = time.time()
         self._counter += 1
         states = []

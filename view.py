@@ -7,6 +7,7 @@ class BoardPanel(wx.Panel):
     def __init__(self, parent, player):
         super(BoardPanel, self).__init__(parent, -1, style=wx.BORDER_SUNKEN)
         self.bit = False
+        self.explode = wx.Bitmap('images/explode.png')
         self.plain = {
             model.RED: wx.Bitmap('images/red.png'),
             model.BLUE: wx.Bitmap('images/blue.png'),
@@ -57,7 +58,9 @@ class BoardPanel(wx.Panel):
                 cell = board.get(x, y)
                 if cell == model.EMPTY_CELL:
                     continue
-                if cell.germ:
+                elif cell == model.EXPLODE_CELL:
+                    bitmap = self.explode
+                elif cell.germ:
                     if self.bit:
                         bitmap = self.germ1[cell.color]
                     else:
