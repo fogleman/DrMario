@@ -1,7 +1,9 @@
 import wx
 import time
+import random
 import model
 import view
+import sound
 
 TICK = 50
 MOVE = 15
@@ -9,11 +11,17 @@ SHIFT = 5
 ENGINE = 2
 TOGGLE = 8
 
+SOUNDS = [
+    sound.Sound('./sounds/fever.mp3'),
+    sound.Sound('./sounds/chill.mp3'),
+]
+
 class Controller(object):
     def __init__(self, players):
         self.players = players
         self._counter = 0
         self._delay = 0
+        self._sound = random.choice(SOUNDS)
         frame = view.MainFrame()
         for player in players:
             frame.add_player(player)
@@ -44,6 +52,8 @@ class Controller(object):
     def on_tick(self):
         if not self.frame:
             return
+        if not self._sound.playing:
+            self._sound.play()
         start = time.time()
         self._counter += 1
         states = []
