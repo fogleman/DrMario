@@ -10,7 +10,7 @@ try:
 except Exception:
     pass
     
-PLAYERS = 2
+PLAYERS = 1
 HUMAN = False
 DENSITY = 0.5
 BOARD_SEED = None

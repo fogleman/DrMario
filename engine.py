@@ -2,33 +2,43 @@ import time
 import random
 import model
 import router
-import itertools
+
+RECURSE = 0
+INFINITY = 10e9
 
 class Engine(object):
     def __init__(self, seed=None):
         self.rand = random.Random(seed)
-    def get_moves(self, the_board, the_pill, the_jar):
+    def get_moves(self, the_board, the_pill, the_jar, return_score=False):
         start = time.time()
         sites = router.find_sites(the_board, the_pill)
         graph = router.Graph(the_board)
-        self.rand.shuffle(sites)
-        best = -10e9
-        result = None
+        scores = []
         for site in sites:
             board = the_board.copy()
             pill = site.copy()
             pill.board = board
             pill.place()
-            score = self.evaluate(board, pill)
-            if score > best:
-                path = router.find_path(graph, the_pill, site)
-                if path:
-                    best = score
-                    result = path
+            if the_jar and RECURSE:
+                p = model.Pill(board, *the_jar[0])
+                score = self.get_moves(board, p, the_jar[1:], True)
+            else:
+                score = self.evaluate(board, pill)
+            scores.append((score, site))
+        if return_score:
+            return max(score for score, site in scores)
+        scores.sort()
+        scores.reverse()
+        for score, site in scores:
+            path = router.find_path(graph, the_pill, site)
+            if path:
+                break
+        else:
+            path = []
         end = time.time()
         duration = int((end - start) * 1000)
         print '%d sites, %d ms.' % (len(sites), duration)
-        return result
+        return path
     def evaluate(self, board, pill):
         score = 0
         w, h = board.width, board.height
@@ -41,14 +51,14 @@ class Engine(object):
         # germ count
         germs = [cell for cell in board.cells.itervalues() if cell.germ]
         if not germs:
-            score += 10000
+            return INFINITY
         score -= len(germs) * 20
         
         # game over
         if board.get(w/2, 0) != model.EMPTY_CELL:
-            score -= 10000
+            return -INFINITY
         if board.get(w/2-1, 0) != model.EMPTY_CELL:
-            score -= 10000
+            return -INFINITY
             
         # top section
         for x in range(w):
