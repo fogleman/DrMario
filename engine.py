@@ -93,27 +93,21 @@ class Engine(object):
         return score
         
 if __name__ == '__main__':
-    import random
-    random.seed(0)
-    
     import psyco
     psyco.full()
-    
     engine = Engine()
     board = model.Board()
     board.populate()
     count = 0
     while not board.over and not board.win:
         pill = model.Pill(board)
-        rotations, moves = engine.get_moves(board, pill)
-        for rotation in rotations:
-            pill.rotate(rotation)
+        moves = engine.get_moves(board, pill, [])
         for move in moves:
-            pill.move(move)
+            pill.do(move)
         pill.drop()
         pill.place()
         board.reduce()
         count += 1
-        print board
         print count
+        print board
         

@@ -328,6 +328,11 @@ class Pill(object):
         if board.get(*self.pos2) != EMPTY_CELL:
             return False
         return True
+    def do(self, move):
+        if isinstance(move, tuple):
+            return self.move(move)
+        else:
+            return self.rotate(move)
     def rotate(self, direction=CW, shift=True):
         assert self.test()
         undo = CCW if direction == CW else CW
