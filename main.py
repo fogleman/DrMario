@@ -11,7 +11,7 @@ except Exception:
     pass
     
 PLAYERS = 2
-HUMAN = True
+HUMAN = False
 DENSITY = 0.5
 BOARD_SEED = None
 JAR_SEED = None
