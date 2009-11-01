@@ -45,14 +45,14 @@ class Engine(object):
         combos, cells, shifts = board.reduce()
         
         # reduction
-        score += 20 ** len(combos)
-        score -= shifts
+        score += 10 ** len(combos)
+        score -= shifts / 10.0
         
         # germ count
         germs = [cell for cell in board.cells.itervalues() if cell.germ]
         if not germs:
             return INFINITY
-        score -= len(germs) * 20
+        score -= len(germs) * 10
         
         # game over
         if board.get(w/2, 0) != model.EMPTY_CELL:
@@ -75,13 +75,13 @@ class Engine(object):
             previous = None
             germ = False
             for y in range(h-1, -1, -1):
-                t = h - y
+                #t = h - y
                 cell = board.get(x, y)
                 if cell == model.EMPTY_CELL:
                     continue
                 if previous and cell.color != previous.color:
-                    mult = 6 if germ else 2
-                    score -= t * mult
+                    mult = 5 if germ else 1
+                    score -= mult
                 if cell.germ:
                     germ = True
                 previous = cell
@@ -90,28 +90,27 @@ class Engine(object):
         for x in range(w):
             previous = None
             for y in range(h):
-                t = h - y
+                #t = h - y
                 cell = board.get(x, y)
                 if cell == model.EMPTY_CELL:
                     previous = None
                     continue
                 if previous and cell.color == previous.color:
-                    mult = 4 if cell.germ else 2
-                    score += t * mult
+                    mult = 10 if cell.germ else 1
+                    score += mult
                 previous = cell
                 
         return score
         
 if __name__ == '__main__':
-    import psyco
-    psyco.full()
     engine = Engine()
     board = model.Board()
+    jar = model.Jar()
     board.populate()
     count = 0
     while not board.over and not board.win:
-        pill = model.Pill(board)
-        moves = engine.get_moves(board, pill, [])
+        pill = jar.pop_pill(board)
+        moves = engine.get_moves(board, pill, jar.peek())
         for move in moves:
             pill.do(move)
         pill.drop()

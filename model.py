@@ -30,6 +30,22 @@ SHIFTING = 2
 OVER = 3
 WIN = 4
 
+MOVE_NAMES = {
+    UP: 'Up',
+    DOWN: 'Down',
+    LEFT: 'Left',
+    RIGHT: 'Right',
+    CW: 'CW',
+    CCW: 'CCW',
+}
+
+COLOR_NAMES = {
+    EMPTY: 'Empty',
+    RED: 'Red',
+    BLUE: 'Blue',
+    YELLOW: 'Yellow',
+}
+
 class Cell(object):
     def __init__(self, color=EMPTY, germ=False, connection=None):
         self.color = color
@@ -92,7 +108,8 @@ class Board(object):
         if x < 0 or y < 0 or x >= self.width or y >= self.height:
             return
         if cell == EMPTY_CELL:
-            del self.cells[(x, y)]
+            if (x, y) in self.cells:
+                del self.cells[(x, y)]
         else:
             self.cells[(x, y)] = cell
     def lookup(self, cell):
@@ -458,7 +475,9 @@ class Player(object):
     def pop_pill(self):
         self.pill = self.jar.pop_pill(self.board)
         if self.engine:
-            self._engine_data = self.engine.get_moves(self.board, self.pill, self.jar.peek())
+            moves = self.engine.get_moves(self.board, self.pill, self.jar.peek())
+            self._engine_data = moves
+            print ', '.join(MOVE_NAMES[move] for move in moves)
     def update(self):
         result = []
         if self.state == MOVING:
@@ -467,10 +486,7 @@ class Player(object):
                 moves = self._engine_data
                 if moves:
                     move = moves.pop(0)
-                    if isinstance(move, tuple):
-                        self.pill.move(move)
-                    else:
-                        self.pill.rotate(move)
+                    self.pill.do(move)
                 else:
                     if not self.pill.move():
                         place = True
@@ -511,6 +527,16 @@ class Player(object):
             pill = self.pill.copy()
             pill.board = board
             pill.place()
+        return board
+        w, h = board.width, board.height
+        board.height += 1
+        for y in range(h-1, -1, -1):
+            for x in range(w):
+                cell = board.get(x, y)
+                board.set(x, y+1, cell)
+                board.set(x, y, EMPTY_CELL)
+        pill = Pill(board, *(self.jar.peek()[0]))
+        pill.place()
         return board
         
         

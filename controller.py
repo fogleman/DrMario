@@ -6,10 +6,10 @@ import view
 import sound
 
 TICK = 50
-MOVE = 15
-SHIFT = 5
-ENGINE = 2
-TOGGLE = 8
+MOVE = 750 / TICK
+SHIFT = 250 / TICK
+ENGINE = 100 / TICK
+TOGGLE = 500 / TICK
 
 SOUNDS = [
     sound.Sound('./sounds/fever.mp3'),
