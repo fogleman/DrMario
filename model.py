@@ -307,6 +307,13 @@ class Board(object):
         return '\n'.join(rows)
         
 class Pill(object):
+    @staticmethod
+    def from_key(board, key):
+        p1, p2, c1, c2 = key
+        pill = Pill(board, c1, c2)
+        pill.pos1 = p1
+        pill.pos2 = p2
+        return pill
     def __init__(self, board, color1=EMPTY, color2=EMPTY):
         x = board.width / 2
         self.board = board

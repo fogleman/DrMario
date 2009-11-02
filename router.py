@@ -7,18 +7,11 @@ class Graph(object):
         self.cache = {}
     def convert(self, path):
         result = []
-        p1, p2, c1, c2 = path[0]
-        pill = model.Pill(self.board, c1, c2)
-        pill.pos1 = p1
-        pill.pos2 = p2
+        pill = model.Pill.from_key(self.board, path[0])
         for key in path[1:]:
             for move in (model.DOWN, model.LEFT, model.RIGHT, model.CW, model.CCW):
                 p = pill.copy()
-                if isinstance(move, tuple):
-                    ok = p.move(move)
-                else:
-                    ok = p.rotate(move)
-                if not ok:
+                if not p.do(move):
                     continue
                 if p.key == key:
                     result.append(move)
@@ -30,10 +23,6 @@ class Graph(object):
     def __getitem__(self, key):
         if key in self.cache:
             return self.cache[key]
-        p1, p2, c1, c2 = key
-        pill = model.Pill(self.board, c1, c2)
-        pill.pos1 = p1
-        pill.pos2 = p2
         d = {}
         data = [
             (model.DOWN, 11),
@@ -42,25 +31,19 @@ class Graph(object):
             (model.CW, 9),
             (model.CCW, 9),
         ]
+        pill = model.Pill.from_key(self.board, key)
         for move, weight in data:
             p = pill.copy()
-            if isinstance(move, tuple):
-                ok = p.move(move)
-            else:
-                ok = p.rotate(move)
-            if not ok:
+            if not p.do(move):
                 continue
-            k = p.key
-            d[k] = weight
+            d[p.key] = weight
         self.cache[key] = d
         return d
         
 def find_sites(board, pill):
     def add_sites(result, x1, y1, x2, y2, c1, c2):
-        p1 = (x1, y1, x2, y2, c1, c2)
-        p2 = (x1, y1, x2, y2, c2, c1)
-        result.add(p1)
-        result.add(p2)
+        result.add(((x1, y1), (x2, y2), c1, c2))
+        result.add(((x1, y1), (x2, y2), c2, c1))
     sites = set()
     c1, c2 = pill.color1, pill.color2
     points = board.cells.keys()
@@ -77,10 +60,8 @@ def find_sites(board, pill):
         if y > 1 and board.get(x, y-2) == model.EMPTY_CELL:
             add_sites(sites, x, y-2, x, y-1, c1, c2)
     pills = []
-    for x1, y1, x2, y2, c1, c2 in sites:
-        pill = model.Pill(board, c1, c2)
-        pill.pos1 = (x1, y1)
-        pill.pos2 = (x2, y2)
+    for key in sorted(sites):
+        pill = model.Pill.from_key(board, key)
         pills.append(pill)
     return pills
     
