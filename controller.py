@@ -24,6 +24,7 @@ class Controller(object):
         self._sound = random.choice(SOUNDS)
         frame = view.MainFrame()
         for player in players:
+            player._offset = 0
             frame.add_player(player)
         frame.Bind(wx.EVT_CHAR, self.on_char)
         frame.Centre()
@@ -49,6 +50,15 @@ class Controller(object):
         duration = max(duration, 1)
         duration = min(duration, TICK)
         wx.CallLater(duration, self.on_tick)
+    def should_update(self, player):
+        n = self._counter
+        if player.engine and player.state == model.MOVING:
+            return n % ENGINE == 0
+        if player.state == model.MOVING:
+            return (n + player._offset) % MOVE == 0
+        if player.state == model.SHIFTING:
+            return (n + player._offset) % SHIFT == 0
+        return False
     def on_tick(self):
         if not self.frame:
             return
@@ -56,22 +66,8 @@ class Controller(object):
             self._sound.play()
         start = time.time()
         self._counter += 1
-        states = []
-        if self._counter % MOVE == 0:
-            states.append(model.MOVING)
-        if self._counter % SHIFT == 0:
-            states.append(model.SHIFTING)
-        engine = self._counter % ENGINE == 0
         for player in self.players:
-            update = False
-            if player.engine:
-                if player.state == model.MOVING:
-                    update = engine
-                else:
-                    update = player.state in states
-            else:
-                update = player.state in states
-            if update:
+            if self.should_update(player):
                 self.update(player)
                 self.refresh(player)
         if self._counter % TOGGLE == 0:
@@ -92,6 +88,8 @@ class Controller(object):
         if code == wx.WXK_SPACE:
             self.on_drop()
     def on_move(self, direction):
+        if direction == model.DOWN:
+            self.on_adjust()
         for player in self.players:
             if player.engine or player.state != model.MOVING:
                 continue
@@ -106,10 +104,16 @@ class Controller(object):
             player.pill.rotate(direction)
             self.refresh(player)
     def on_drop(self):
+        self.on_adjust()
         for player in self.players:
             if player.engine or player.state != model.MOVING:
                 continue
             player.pill.drop()
             self.update(player)
             self.refresh(player)
+    def on_adjust(self):
+        for player in self.players:
+            if player.engine or player.state != model.MOVING:
+                continue
+            player._offset = -self._counter
             
