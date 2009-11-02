@@ -26,7 +26,7 @@ elif sys.platform == 'win32':
             self.mp.controls.stop()
         @property
         def playing(self):
-            return self.mp.playState != 10
+            return self.mp.playState == 9
 else:
     class Sound(object):
         def __init__(self, path):
