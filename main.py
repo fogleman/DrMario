@@ -10,8 +10,8 @@ try:
 except Exception:
     pass
     
-PLAYERS = 1
-HUMAN = 0
+PLAYERS = 2
+HUMAN = 1
 DENSITY = 0.5
 CEILING = 6
 BOARD_SEED = None
@@ -25,7 +25,7 @@ def multiplayer():
     for i in range(PLAYERS):
         b = board.copy()
         j = model.Jar(1, seed)
-        e = engine.Engine(seed=i)
+        e = engine.Engine({1: 0.38255083329257689, 2: 720.92819210954269, 3: 0.44757236906378917, 4: 6979.2565937495028, 5: 18176.733696356445, 6: 2.7646861964082938, 7: 127027.95319359133, 8: 2.4220402584369252, 9: 1717.5490514101077, 10: 14321.455663758181, 11: 1.4558893578721763})
         if i == 0 and HUMAN:
             e = None
         player = model.Player(b, j, e)

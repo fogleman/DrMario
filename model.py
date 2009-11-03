@@ -359,7 +359,7 @@ class Pill(object):
         else:
             return self.rotate(move)
     def rotate(self, direction=CW, shift=True):
-        assert self.test()
+        #assert self.test()
         undo = CCW if direction == CW else CW
         d1 = LEFT if direction == CW else RIGHT
         d2 = RIGHT if direction == CW else LEFT
@@ -402,11 +402,11 @@ class Pill(object):
         self.pos1, self.pos2 = self.pos2, self.pos1
         self.color1, self.color2 = self.color2, self.color1
     def drop(self):
-        assert self.test()
+        #assert self.test()
         while self.move(DOWN):
             pass
     def move(self, direction=DOWN):
-        assert self.test()
+        #assert self.test()
         undos = {
             UP: DOWN,
             DOWN: UP,
@@ -479,7 +479,7 @@ class Player(object):
         if self.engine:
             moves = self.engine.get_moves(self.board, self.pill, self.jar.peek())
             self._engine_data = moves
-            print ', '.join(MOVE_NAMES[move] for move in moves)
+            #print ', '.join(MOVE_NAMES[move] for move in moves)
     def update(self):
         result = []
         if self.state == MOVING:
@@ -507,9 +507,6 @@ class Player(object):
                     self._combos.extend(combos)
                 else:
                     result = self._combos
-                    count = len(self._combos)
-                    if count > 1:
-                        print '%dx combo!' % count
                     self._combos = []
                     if self.board.win:
                         self.state = WIN
