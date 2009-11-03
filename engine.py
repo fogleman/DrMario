@@ -20,17 +20,17 @@ W_CHANGE_GERM = 11
 class Engine(object):
     def __init__(self, weights=None):
         self.weights = weights or {
-            W_HEADER: 100.0,
-            W_SHIFT: 100.0,
-            W_COMBO1: 100.0,
-            W_COMBO2: 100.0,
+            W_HEADER: 5000.0,
+            W_SHIFT: 0.1,
+            W_COMBO1: 1.0,
+            W_COMBO2: 10.0,
             W_COMBO3: 100.0,
-            W_CELL: 100.0,
-            W_GERM: 100.0,
-            W_CONN_CELL: 100.0,
-            W_CONN_GERM: 100.0,
-            W_CHANGE_CELL: 100.0,
-            W_CHANGE_GERM: 100.0,
+            W_CELL: 10.0,
+            W_GERM: 50.0,
+            W_CONN_CELL: 1.0,
+            W_CONN_GERM: 5.0,
+            W_CHANGE_CELL: 1.0,
+            W_CHANGE_GERM: 10.0,
         }
     def weight(self, type):
         return self.weights[type]
