@@ -322,18 +322,13 @@ class Pill(object):
         self.color1 = color1 or random.choice(COLORS)
         self.color2 = color2 or random.choice(COLORS)
     def copy(self):
-        pill = Pill(self.board)
+        pill = Pill(self.board, self.color1, self.color2)
         pill.pos1 = self.pos1
         pill.pos2 = self.pos2
-        pill.color1 = self.color1
-        pill.color2 = self.color2
         return pill
     @property
     def key(self):
         return (self.pos1, self.pos2, self.color1, self.color2)
-    @property
-    def rkey(self):
-        return (self.pos1, self.pos2, self.color2, self.color1)
     @property
     def orientation(self):
         x1, y1 = self.pos1

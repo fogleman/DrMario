@@ -44,6 +44,82 @@ class Engine(object):
         w, h = board.width, board.height
         combos, cells, shifts = board.reduce()
         
+        # win
+        if not any(cell.germ for cell in board.cells.itervalues()):
+            return INFINITY
+            
+        # game over
+        if board.get(w/2, 0) != model.EMPTY_CELL:
+            return -INFINITY
+        if board.get(w/2-1, 0) != model.EMPTY_CELL:
+            return -INFINITY
+            
+        # top section
+        for x in range(w):
+            colors = set()
+            for y in range(model.LENGTH):
+                color = board.get(x, y).color
+                if color != model.EMPTY:
+                    colors.add(color)
+            if len(colors) > 1:
+                score -= 5000
+                
+        # shifts
+        score -= shifts / 10.0
+        
+        # combos
+        if combos > 1:
+            score += 1000
+            
+        # counts
+        for xy, cell in board.cells.iteritems():
+            if cell.germ:
+                score -= 500
+            else:
+                score -= 100
+                
+        # top connections
+        for x in range(w):
+            has_germ = any(board.get(x, y).germ for y in range(h))
+            previous = None
+            count = 1
+            for y in range(h):
+                cell = board.get(x, y)
+                color = cell.color
+                if color == model.EMPTY:
+                    continue
+                if previous:
+                    if color == previous:
+                        count += 1
+                    else:
+                        break
+                if cell.germ:
+                    break
+                previous = color
+            score += count * 5 if has_germ else 1
+            
+        # color changes
+        for x in range(w):
+            previous = None
+            germ = False
+            for y in range(h-1, -1, -1):
+                cell = board.get(x, y)
+                if cell == model.EMPTY_CELL:
+                    continue
+                if previous and cell.color != previous.color:
+                    mult = 50 if germ else 10
+                    score -= mult
+                if cell.germ:
+                    germ = True
+                previous = cell
+                
+        return score
+        
+    def _evaluate(self, board, pill):
+        score = 0
+        w, h = board.width, board.height
+        combos, cells, shifts = board.reduce()
+        
         # reduction
         score += 10 ** len(combos)
         score -= shifts / 10.0
@@ -103,6 +179,8 @@ class Engine(object):
         return score
         
 if __name__ == '__main__':
+    import psyco
+    psyco.full()
     engine = Engine()
     board = model.Board()
     jar = model.Jar()
