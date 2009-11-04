@@ -12,26 +12,24 @@ W_COMBO2 = 4
 W_COMBO3 = 5
 W_CELL = 6
 W_GERM = 7
-W_CONN_CELL = 8
-W_CONN_GERM = 9
-W_CHANGE_CELL = 10
-W_CHANGE_GERM = 11
+W_MATCH = 8
+W_MISMATCH = 9
+
+DEFAULT_WEIGHTS = {
+    W_HEADER: 1000.0,
+    W_SHIFT: 0.1,
+    W_COMBO1: 1.0,
+    W_COMBO2: 10.0,
+    W_COMBO3: 100.0,
+    W_CELL: 10.0,
+    W_GERM: 50.0,
+    W_MATCH: 10.0,
+    W_MISMATCH: 150.0,
+}
 
 class Engine(object):
     def __init__(self, weights=None):
-        self.weights = weights or {
-            W_HEADER: 5000.0,
-            W_SHIFT: 0.1,
-            W_COMBO1: 1.0,
-            W_COMBO2: 10.0,
-            W_COMBO3: 100.0,
-            W_CELL: 10.0,
-            W_GERM: 50.0,
-            W_CONN_CELL: 1.0,
-            W_CONN_GERM: 5.0,
-            W_CHANGE_CELL: 1.0,
-            W_CHANGE_GERM: 10.0,
-        }
+        self.weights = weights or DEFAULT_WEIGHTS
     def weight(self, type):
         return self.weights[type]
     def get_moves(self, the_board, the_pill, the_jar, return_score=False):
@@ -44,7 +42,7 @@ class Engine(object):
             pill = site.copy()
             pill.board = board
             pill.place()
-            if the_jar and RECURSE:
+            if RECURSE and the_jar:
                 p = model.Pill(board, *the_jar[0])
                 score = self.get_moves(board, p, the_jar[1:], True)
             else:
@@ -108,37 +106,32 @@ class Engine(object):
             else:
                 score -= self.weight(W_CELL)
                 
-        # top connections
+        # color changes/matches
         for x in range(w):
-            has_germ = any(board.get(x, y).germ for y in range(h))
+            germs = 0
             previous = None
-            count = 1
-            for y in range(h):
-                cell = board.get(x, y)
-                color = cell.color
-                if color == model.EMPTY:
-                    continue
-                if previous:
-                    if color == previous:
-                        count += 1
-                    else:
-                        break
-                if cell.germ:
-                    break
-                previous = color
-            score += count * self.weight(W_CONN_GERM if has_germ else W_CONN_CELL)
-            
-        # color changes
-        for x in range(w):
-            previous = None
-            for y in range(h):
+            for y in range(h-1, -1, -1):
+                t = h - y
                 cell = board.get(x, y)
                 if cell == model.EMPTY_CELL:
                     continue
-                if previous and cell.color != previous.color:
-                    score -= self.weight(W_CHANGE_GERM if cell.germ else W_CHANGE_CELL)
-                previous = cell if not cell.germ else None
-                
+                if cell.germ:
+                    previous = None
+                if previous:
+                    if previous.color == cell.color:
+                        sub = self.weight(W_MATCH)
+                        sub *= (t / float(h)) + 1
+                        sub *= (germs / 10.0) + 1
+                        score += sub
+                    else:
+                        sub = self.weight(W_MISMATCH)
+                        sub *= (t / float(h)) + 1
+                        sub *= (germs / 10.0) + 1
+                        score -= sub
+                previous = cell
+                if cell.germ:
+                    germs += 1
+                    
         return score
         
         

@@ -136,7 +136,10 @@ class Board(object):
         return self.get(*a) != EMPTY_CELL or self.get(*b) != EMPTY_CELL
     @property
     def win(self):
-        return not any(cell.germ for cell in self.cells.values())
+        return self.germ_count == 0
+    @property
+    def germ_count(self):
+        return sum(int(cell.germ) for cell in self.cells.itervalues())
     def populate(self, density=0.5, ceiling=6):
         rand = self.rand
         self.clear()
@@ -437,8 +440,10 @@ class Pill(object):
         board.set(x, y, cell1)
         x, y = self.pos2
         board.set(x, y, cell2)
+    def __repr__(self):
+        return str(self)
     def __str__(self):
-        return '%s %s' % (self.pos1, self.pos2)
+        return str(self.key)
         
 class Jar(object):
     def __init__(self, size=1, seed=None):
