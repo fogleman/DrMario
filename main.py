@@ -12,7 +12,7 @@ except Exception:
     
 PLAYERS = 1
 HUMAN = 0
-DENSITY = 0.5
+DENSITY = 0.75
 CEILING = 6
 BOARD_SEED = None
 JAR_SEED = None

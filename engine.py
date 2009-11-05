@@ -23,8 +23,8 @@ DEFAULT_WEIGHTS = {
     W_COMBO3: 100.0,
     W_CELL: 10.0,
     W_GERM: 50.0,
-    W_MATCH: 10.0,
-    W_MISMATCH: 150.0,
+    W_MATCH: 6.0,
+    W_MISMATCH: 80.0,
 }
 
 class Engine(object):

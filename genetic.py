@@ -15,7 +15,7 @@ def group(boards):
 def run(weights, rain=False):
     players = []
     board = model.Board()
-    board.populate(0.1, 6)
+    board.populate(0.25, 6)
     seed = random.getrandbits(32)
     for w in weights:
         b = board.copy()
@@ -23,38 +23,51 @@ def run(weights, rain=False):
         e = engine.Engine(w)
         p = model.Player(b, j, e)
         players.append(p)
+    winners = []
+    losers = []
+    done = set()
     while True:
-        import time
-        time.sleep(0.1)
         germs = [p.board.germ_count for p in players]
         print germs
-        print group([p.display() for p in players[:10]])
+        #print group([p.display() for p in players[:10]])
+        if len(done) == len(players):
+            break
         for p in players:
-            if p.jar.count > 500:
-                return None
+            if p in done:
+                continue
+            if p.state == model.OVER or p.jar.count > 250:
+                losers.append(p)
+                done.add(p)
             if p.state == model.WIN:
-                return players.index(p)
+                winners.append(p)
+                done.add(p)
         for p in players:
+            if p in done:
+                continue
             c = p.update()
             if rain and len(c) > 1:
                 for q in players:
                     if p == q:
                         continue
                     q.rain.extend(c)
-    #return None
+    losers.reverse()
+    rank = winners + losers
+    rank = [players.index(p) for p in rank]
+    print 'Rank:', rank
+    return rank
     
 def main():
-    a = range(0, 100, 10)
+    a = range(10)
     weights = []
     for p in a:
         w = dict(engine.DEFAULT_WEIGHTS)
-        w[engine.W_GERM] = p
+        w[engine.W_COMBO1] = p * 10.0
         weights.append(w)
-    winner = run(weights)
+    winner = run(weights)[0]
     print winner, weights[winner]
     
 def mutate(w):
-    index = random.randint(1, 9)
+    index = random.randint(6, 9)
     pct = random.randint(57, 150) / 100.0
     w[index] *= pct
     
