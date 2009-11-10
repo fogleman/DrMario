@@ -38,20 +38,23 @@ class Engine(object):
         graph = router.Graph(the_board)
         scores = []
         for site in sites:
-            board = the_board.copy()
-            pill = site.copy()
-            pill.board = board
+            pill, board = site.copy(True)
             pill.place()
-            if RECURSE and the_jar:
-                p = model.Pill(board, *the_jar[0])
-                score = self.get_moves(board, p, the_jar[1:], True)
-            else:
-                score = self.evaluate(board, pill)
+            score = self.evaluate(board, pill)
             scores.append((score, site))
+        if RECURSE and the_jar:
+            scores.sort(reverse=True)
+            new_scores = []
+            for score, site in scores[:5]:
+                pill, board = site.copy(True)
+                pill.place()
+                p = model.Pill(board, *the_jar[0])
+                new_score = self.get_moves(board, p, the_jar[1:], True)
+                new_scores.append((new_score, site))
+            scores = new_scores
         if return_score:
             return max(score for score, site in scores)
-        scores.sort()
-        scores.reverse()
+        scores.sort(reverse=True)
         for score, site in scores:
             path = router.find_path(graph, the_pill, site)
             if path:

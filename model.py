@@ -1,6 +1,7 @@
 import copy
 import random
 import itertools
+import numpy
 
 WIDTH = 8
 HEIGHT = 16
@@ -91,7 +92,7 @@ class Board(object):
     def __init__(self, width=WIDTH, height=HEIGHT, seed=None):
         self.width = width
         self.height = height
-        self.cells = {}
+        self.clear()
         self.rand = random.Random(seed)
     def copy(self):
         board = Board(self.width, self.height)
@@ -101,12 +102,18 @@ class Board(object):
             board.set(x, y, cell.copy())
         return board
     def clear(self):
+        w, h = self.width, self.height
         self.cells = {}
+        self.array = numpy.array([EMPTY_CELL] * (w * h), dtype=object).reshape(w, h)
     def get(self, x, y):
-        return self.cells.get((x, y), EMPTY_CELL)
+        try:
+            return self.array[x, y]
+        except IndexError:
+            return EMPTY_CELL
     def set(self, x, y, cell):
         if x < 0 or y < 0 or x >= self.width or y >= self.height:
             return
+        self.array[x, y] = cell
         if cell == EMPTY_CELL:
             if (x, y) in self.cells:
                 del self.cells[(x, y)]
@@ -140,6 +147,13 @@ class Board(object):
     @property
     def germ_count(self):
         return sum(int(cell.germ) for cell in self.cells.itervalues())
+    @property
+    def min_pills(self):
+        combos, cells = self.find(3)
+        assert not cells
+        combos, cells = self.find(2)
+        assert all(cell.germ for cell in cells)
+        return int(self.germ_count * 1.5 - len(cells))
     def populate(self, density=0.5, ceiling=6):
         rand = self.rand
         self.clear()
@@ -195,6 +209,7 @@ class Board(object):
             else:
                 x, y = self.lookup(cell)
                 self.set(x, y, EMPTY_CELL)
+        print self.min_pills
     def rain(self, colors):
         rand = self.rand
         cols = [x for x in range(self.width) if self.get(x, 0) == EMPTY_CELL]
@@ -239,9 +254,9 @@ class Board(object):
         return combos, cells
     def shift(self):
         result = False
-        for y in range(self.height-2, -1, -1):
+        for y in xrange(self.height-2, -1, -1):
             cells = []
-            for x in range(self.width):
+            for x in xrange(self.width):
                 cell = self.get(x, y)
                 if cell.color == EMPTY:
                     continue
@@ -263,9 +278,11 @@ class Board(object):
         combos = []
         horizontal = set()
         vertical = set()
-        for y in range(self.height):
-            for x in range(self.width):
+        for y in xrange(self.height):
+            for x in xrange(self.width):
                 cell = self.get(x, y)
+                if cell == EMPTY_CELL:
+                    continue
                 if cell not in horizontal:
                     n = self.count(x, y, HORIZONTAL)
                     if n >= length:
@@ -285,7 +302,9 @@ class Board(object):
         color = self.get(x, y).color
         if color == EMPTY:
             return 0
-        count = 0
+        count = 1
+        x += dx
+        y += dy
         while self.get(x, y).color == color:
             count += 1
             x += dx
@@ -324,11 +343,12 @@ class Pill(object):
         self.pos2 = (x, 0)
         self.color1 = color1 or random.choice(COLORS)
         self.color2 = color2 or random.choice(COLORS)
-    def copy(self):
-        pill = Pill(self.board, self.color1, self.color2)
+    def copy(self, copy_board=False):
+        board = self.board.copy() if copy_board else self.board
+        pill = Pill(board, self.color1, self.color2)
         pill.pos1 = self.pos1
         pill.pos2 = self.pos2
-        return pill
+        return (pill, board) if copy_board else pill
     @property
     def key(self):
         return (self.pos1, self.pos2, self.color1, self.color2)

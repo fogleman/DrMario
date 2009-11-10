@@ -5,7 +5,7 @@ import model
 import view
 import sound
 
-TICK = 50
+TICK = 10
 MOVE = 750 / TICK
 SHIFT = 250 / TICK
 ENGINE = 100 / TICK
