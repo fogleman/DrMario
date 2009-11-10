@@ -10,10 +10,10 @@ try:
 except Exception:
     pass
     
-PLAYERS = 2
-HUMAN = 1
-DENSITY = 0.5
-CEILING = 6
+PLAYERS = 1
+HUMAN = 0
+DENSITY = 0.95
+CEILING = 5
 BOARD_SEED = None
 JAR_SEED = None
 
