@@ -1,6 +1,14 @@
 import model
 import dijkstra
 
+WEIGHTS = [
+    (model.DOWN, 11),
+    (model.LEFT, 10),
+    (model.RIGHT, 10),
+    (model.CW, 9),
+    (model.CCW, 9),
+]
+
 class Graph(object):
     def __init__(self, board):
         self.board = board
@@ -24,15 +32,8 @@ class Graph(object):
         if key in self.cache:
             return self.cache[key]
         d = {}
-        data = [
-            (model.DOWN, 11),
-            (model.LEFT, 10),
-            (model.RIGHT, 10),
-            (model.CW, 9),
-            (model.CCW, 9),
-        ]
         pill = model.Pill.from_key(self.board, key)
-        for move, weight in data:
+        for move, weight in WEIGHTS:
             p = pill.copy()
             if not p.do(move):
                 continue
