@@ -106,10 +106,9 @@ class Board(object):
         self.cells = {}
         self.array = numpy.array([EMPTY_CELL] * (w * h), dtype=object).reshape(w, h)
     def get(self, x, y):
-        try:
-            return self.array[x, y]
-        except IndexError:
+        if x < 0 or y < 0 or x >= self.width or y >= self.height:
             return EMPTY_CELL
+        return self.array[x, y]
     def set(self, x, y, cell):
         if x < 0 or y < 0 or x >= self.width or y >= self.height:
             return

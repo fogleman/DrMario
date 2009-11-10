@@ -8,7 +8,7 @@ import sound
 TICK = 10
 MOVE = 750 / TICK
 SHIFT = 250 / TICK
-ENGINE = 100 / TICK
+ENGINE = 150 / TICK
 TOGGLE = 500 / TICK
 
 SOUNDS = [
