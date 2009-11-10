@@ -68,7 +68,7 @@ class Engine(object):
             path.append(model.DROP)
         end = time.time()
         duration = int((end - start) * 1000)
-        #print '%d sites, %d ms.' % (len(sites), duration)
+        print '%d sites, %d ms.' % (len(sites), duration)
         return path
     def evaluate(self, board, pill):
         score = 0
