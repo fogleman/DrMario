@@ -3,6 +3,7 @@ import model
 import router
 
 RECURSE = 0
+DROP = 1
 INFINITY = 10e9
 
 W_HEADER = 1
@@ -61,6 +62,10 @@ class Engine(object):
                 break
         else:
             path = []
+        if DROP:
+            while path and path[-1] == model.DOWN:
+                path.pop()
+            path.append(model.DROP)
         end = time.time()
         duration = int((end - start) * 1000)
         #print '%d sites, %d ms.' % (len(sites), duration)

@@ -16,6 +16,7 @@ UP = (0, -1)
 DOWN = (0, 1)
 LEFT = (-1, 0)
 RIGHT = (1, 0)
+DROP = (0, 0)
 
 EMPTY = 0
 RED = 1
@@ -376,7 +377,9 @@ class Pill(object):
             return False
         return True
     def do(self, move):
-        if isinstance(move, tuple):
+        if move == DROP:
+            return self.drop()
+        elif isinstance(move, tuple):
             return self.move(move)
         else:
             return self.rotate(move)
@@ -427,6 +430,7 @@ class Pill(object):
         #assert self.test()
         while self.move(DOWN):
             pass
+        return True
     def move(self, direction=DOWN):
         #assert self.test()
         undos = {
