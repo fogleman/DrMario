@@ -3,7 +3,7 @@ import model
 import router
 
 RECURSE = 0
-DROP = 1
+DROP = 0
 INFINITY = 10e9
 
 W_HEADER = 1
@@ -46,7 +46,7 @@ class Engine(object):
         if RECURSE and the_jar:
             scores.sort(reverse=True)
             new_scores = []
-            for score, site in scores[:5]:
+            for score, site in scores[:10]:
                 pill, board = site.copy(True)
                 pill.place()
                 p = model.Pill(board, *the_jar[0])

@@ -2,11 +2,11 @@ import model
 import dijkstra
 
 WEIGHTS = [
-    (model.DOWN, 11),
-    (model.LEFT, 10),
-    (model.RIGHT, 10),
-    (model.CW, 9),
-    (model.CCW, 9),
+    (model.DOWN, 12),
+    (model.LEFT, 11),
+    (model.RIGHT, 11),
+    (model.CW, 10),
+    (model.CCW, 10),
 ]
 
 class Graph(object):

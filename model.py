@@ -93,8 +93,8 @@ class Board(object):
     def __init__(self, width=WIDTH, height=HEIGHT, seed=None):
         self.width = width
         self.height = height
-        self.clear()
         self.rand = random.Random(seed)
+        self.clear()
     def copy(self):
         board = Board(self.width, self.height)
         board.rand.setstate(self.rand.getstate())
