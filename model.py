@@ -460,9 +460,15 @@ class Pill(object):
         connection = UP if orientation == VERTICAL else LEFT
         cell2 = Cell(self.color2, False, connection)
         x, y = self.pos1
-        board.set(x, y, cell1)
+        if y < 0:
+            cell2.connection = None
+        else:
+            board.set(x, y, cell1)
         x, y = self.pos2
-        board.set(x, y, cell2)
+        if y < 0:
+            cell1.connection = None
+        else:
+            board.set(x, y, cell2)
     def __repr__(self):
         return str(self)
     def __str__(self):
