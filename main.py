@@ -4,14 +4,8 @@ import engine
 import model
 import controller
 
-try:
-    import psyco
-    psyco.full()
-except Exception:
-    pass
-    
-PLAYERS = 2
-HUMAN = 1
+PLAYERS = 1
+HUMAN = 0
 DENSITY = 0.5
 CEILING = 5
 BOARD_SEED = None
@@ -33,7 +27,7 @@ def multiplayer():
     return players
     
 def main():
-    app = wx.PySimpleApp()
+    app = wx.App(False)
     players = multiplayer()
     controller.Controller(players)
     app.MainLoop()

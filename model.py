@@ -1,7 +1,6 @@
 import copy
 import random
 import itertools
-import numpy
 
 WIDTH = 8
 HEIGHT = 16
@@ -105,15 +104,15 @@ class Board(object):
     def clear(self):
         w, h = self.width, self.height
         self.cells = {}
-        self.array = numpy.array([EMPTY_CELL] * (w * h), dtype=object).reshape(w, h)
+        self.array = [EMPTY_CELL] * (w * h)
     def get(self, x, y):
         if x < 0 or y < 0 or x >= self.width or y >= self.height:
             return EMPTY_CELL
-        return self.array[x, y]
+        return self.array[y * self.width + x]
     def set(self, x, y, cell):
         if x < 0 or y < 0 or x >= self.width or y >= self.height:
             return
-        self.array[x, y] = cell
+        self.array[y * self.width + x] = cell
         if cell == EMPTY_CELL:
             if (x, y) in self.cells:
                 del self.cells[(x, y)]

@@ -1,6 +1,6 @@
 import sys
 
-if sys.platform == 'darwin':
+if False:#sys.platform == 'darwin':
     from AppKit import NSSound
     class Sound(object):
         def __init__(self, path):
